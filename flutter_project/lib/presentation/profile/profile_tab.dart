@@ -88,19 +88,19 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
             children: [
               const SizedBox(height: 12),
               // Avatar & name
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 48,
                 backgroundColor: AppColors.primaryLight,
-                child: Icon(Icons.person_rounded, size: 48, color: AppColors.primaryBlue),
+                child: Icon(_avatarIcons[_avatarIndex], size: 48, color: AppColors.primaryBlue),
               ),
               const SizedBox(height: 14),
-              const Text('John Doe', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textMain)),
+              Text(_userName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textMain)),
               const SizedBox(height: 4),
-              const Text('johndoe@email.com', style: TextStyle(fontSize: 14, color: AppColors.textMuted)),
+              Text(_userEmail, style: const TextStyle(fontSize: 14, color: AppColors.textMuted)),
               const SizedBox(height: 8),
               // Edit profile button
               OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: _openEditProfile,
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 label: const Text('Edit Profile'),
                 style: OutlinedButton.styleFrom(
