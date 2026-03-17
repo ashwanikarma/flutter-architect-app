@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/theme_provider.dart';
 import '../../services/api_service.dart';
 import '../auth/login/login_screen.dart';
 import 'edit_profile_screen.dart';
@@ -15,7 +16,6 @@ class ProfileTab extends ConsumerStatefulWidget {
 
 class _ProfileTabState extends ConsumerState<ProfileTab> {
   bool _notificationsEnabled = true;
-  bool _darkModeEnabled = false;
   String _userName = 'John Doe';
   String _userEmail = 'johndoe@email.com';
   int _avatarIndex = 0;
@@ -79,26 +79,26 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = ref.watch(themeModeProvider) == ThemeMode.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.backgroundOf(context),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             children: [
               const SizedBox(height: 12),
-              // Avatar & name
               CircleAvatar(
                 radius: 48,
-                backgroundColor: AppColors.primaryLight,
+                backgroundColor: AppColors.primaryLightOf(context),
                 child: Icon(_avatarIcons[_avatarIndex], size: 48, color: AppColors.primaryBlue),
               ),
               const SizedBox(height: 14),
-              Text(_userName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textMain)),
+              Text(_userName, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textMainOf(context))),
               const SizedBox(height: 4),
-              Text(_userEmail, style: const TextStyle(fontSize: 14, color: AppColors.textMuted)),
+              Text(_userEmail, style: TextStyle(fontSize: 14, color: AppColors.textMutedOf(context))),
               const SizedBox(height: 8),
-              // Edit profile button
               OutlinedButton.icon(
                 onPressed: _openEditProfile,
                 icon: const Icon(Icons.edit_outlined, size: 16),
@@ -116,10 +116,10 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: AppColors.surfaceOf(context),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _StatItem(label: 'Workouts', value: '128'),
@@ -132,7 +132,6 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
               ),
               const SizedBox(height: 24),
 
-              // Settings section
               _sectionHeader('Settings'),
               const SizedBox(height: 8),
               _settingsCard([
@@ -142,31 +141,32 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
                   value: _notificationsEnabled,
                   onChanged: (v) => setState(() => _notificationsEnabled = v),
                 ),
-                const Divider(height: 1),
+                Divider(height: 1, color: AppColors.backgroundOf(context)),
                 _SwitchTile(
                   icon: Icons.dark_mode_outlined,
                   title: 'Dark Mode',
-                  value: _darkModeEnabled,
-                  onChanged: (v) => setState(() => _darkModeEnabled = v),
+                  value: isDark,
+                  onChanged: (v) {
+                    ref.read(themeModeProvider.notifier).state =
+                        v ? ThemeMode.dark : ThemeMode.light;
+                  },
                 ),
               ]),
               const SizedBox(height: 16),
 
-              // General section
               _sectionHeader('General'),
               const SizedBox(height: 8),
               _settingsCard([
                 _NavTile(icon: Icons.language_outlined, title: 'Language', trailing: 'English'),
-                const Divider(height: 1),
+                Divider(height: 1, color: AppColors.backgroundOf(context)),
                 _NavTile(icon: Icons.shield_outlined, title: 'Privacy'),
-                const Divider(height: 1),
+                Divider(height: 1, color: AppColors.backgroundOf(context)),
                 _NavTile(icon: Icons.help_outline_rounded, title: 'Help & Support'),
-                const Divider(height: 1),
+                Divider(height: 1, color: AppColors.backgroundOf(context)),
                 _NavTile(icon: Icons.info_outline_rounded, title: 'About'),
               ]),
               const SizedBox(height: 24),
 
-              // Logout button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -174,7 +174,7 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
                   icon: const Icon(Icons.logout_rounded),
                   label: const Text('Log Out'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade50,
+                    backgroundColor: isDark ? Colors.red.shade900.withOpacity(0.3) : Colors.red.shade50,
                     foregroundColor: Colors.red,
                     elevation: 0,
                     minimumSize: const Size(double.infinity, 52),
@@ -193,13 +193,13 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
   Widget _sectionHeader(String title) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textMain)),
+      child: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textMainOf(context))),
     );
   }
 
   Widget _settingsCard(List<Widget> children) {
     return Container(
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(color: AppColors.surfaceOf(context), borderRadius: BorderRadius.circular(16)),
       child: Column(children: children),
     );
   }
@@ -218,16 +218,15 @@ class _StatItem extends StatelessWidget {
       children: [
         Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.primaryBlue)),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textMutedOf(context))),
       ],
     );
   }
 }
 
 class _Divider extends StatelessWidget {
-  const _Divider();
   @override
-  Widget build(BuildContext context) => Container(width: 1, height: 36, color: AppColors.background);
+  Widget build(BuildContext context) => Container(width: 1, height: 36, color: AppColors.backgroundOf(context));
 }
 
 class _SwitchTile extends StatelessWidget {
@@ -241,7 +240,7 @@ class _SwitchTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: AppColors.primaryBlue, size: 22),
-      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+      title: Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textMainOf(context))),
       trailing: Switch.adaptive(value: value, onChanged: onChanged, activeColor: AppColors.primaryBlue),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
     );
@@ -258,13 +257,13 @@ class _NavTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: AppColors.primaryBlue, size: 22),
-      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+      title: Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textMainOf(context))),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (trailing != null) Text(trailing!, style: const TextStyle(fontSize: 13, color: AppColors.textMuted)),
+          if (trailing != null) Text(trailing!, style: TextStyle(fontSize: 13, color: AppColors.textMutedOf(context))),
           const SizedBox(width: 4),
-          const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMuted),
+          Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMutedOf(context)),
         ],
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),

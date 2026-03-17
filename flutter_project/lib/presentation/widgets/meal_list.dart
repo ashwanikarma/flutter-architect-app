@@ -19,7 +19,7 @@ class MealList extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 12),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(color: AppColors.surfaceOf(context), borderRadius: BorderRadius.circular(16)),
             child: Row(
               children: [
                 Container(
@@ -33,9 +33,9 @@ class MealList extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(m['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                      Text(m['name'] as String, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.textMainOf(context))),
                       const SizedBox(height: 2),
-                      Text(m['info'] as String, style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                      Text(m['info'] as String, style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 12)),
                     ],
                   ),
                 ),
