@@ -16,6 +16,39 @@ class ProfileTab extends ConsumerStatefulWidget {
 class _ProfileTabState extends ConsumerState<ProfileTab> {
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
+  String _userName = 'John Doe';
+  String _userEmail = 'johndoe@email.com';
+  int _avatarIndex = 0;
+
+  static const _avatarIcons = [
+    Icons.person_rounded,
+    Icons.face_rounded,
+    Icons.face_2_rounded,
+    Icons.face_3_rounded,
+    Icons.face_4_rounded,
+    Icons.face_5_rounded,
+    Icons.face_6_rounded,
+    Icons.sports_martial_arts_rounded,
+  ];
+
+  Future<void> _openEditProfile() async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditProfileScreen(
+          initialName: _userName,
+          initialEmail: _userEmail,
+        ),
+      ),
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _userName = result['name'] as String;
+        _userEmail = result['email'] as String;
+        _avatarIndex = result['avatarIndex'] as int;
+      });
+    }
+  }
 
   Future<void> _logout() async {
     final confirm = await showDialog<bool>(
