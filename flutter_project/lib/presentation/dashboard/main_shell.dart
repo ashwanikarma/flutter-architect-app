@@ -3,6 +3,7 @@ import '../../core/theme/app_colors.dart';
 import 'home_tab.dart';
 import '../tasks/statistics_tab.dart';
 import '../tasks/schedule_tab.dart';
+import '../profile/profile_tab.dart';
 
 /// Main app shell with bottom navigation.
 class MainShell extends StatefulWidget {
@@ -20,7 +21,7 @@ class _MainShellState extends State<MainShell> {
     StatisticsTab(),
     SizedBox(), // placeholder for FAB
     ScheduleTab(),
-    Center(child: Text('Profile')),
+    ProfileTab(),
   ];
 
   @override
