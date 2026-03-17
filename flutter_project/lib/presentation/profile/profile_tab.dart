@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/api_service.dart';
 import '../auth/login/login_screen.dart';
+import 'edit_profile_screen.dart';
 
 /// Profile tab displaying user info, settings, and logout.
 class ProfileTab extends ConsumerStatefulWidget {
@@ -15,6 +16,39 @@ class ProfileTab extends ConsumerStatefulWidget {
 class _ProfileTabState extends ConsumerState<ProfileTab> {
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
+  String _userName = 'John Doe';
+  String _userEmail = 'johndoe@email.com';
+  int _avatarIndex = 0;
+
+  static const _avatarIcons = [
+    Icons.person_rounded,
+    Icons.face_rounded,
+    Icons.face_2_rounded,
+    Icons.face_3_rounded,
+    Icons.face_4_rounded,
+    Icons.face_5_rounded,
+    Icons.face_6_rounded,
+    Icons.sports_martial_arts_rounded,
+  ];
+
+  Future<void> _openEditProfile() async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditProfileScreen(
+          initialName: _userName,
+          initialEmail: _userEmail,
+        ),
+      ),
+    );
+    if (result != null && mounted) {
+      setState(() {
+        _userName = result['name'] as String;
+        _userEmail = result['email'] as String;
+        _avatarIndex = result['avatarIndex'] as int;
+      });
+    }
+  }
 
   Future<void> _logout() async {
     final confirm = await showDialog<bool>(
@@ -54,19 +88,19 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
             children: [
               const SizedBox(height: 12),
               // Avatar & name
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 48,
                 backgroundColor: AppColors.primaryLight,
-                child: Icon(Icons.person_rounded, size: 48, color: AppColors.primaryBlue),
+                child: Icon(_avatarIcons[_avatarIndex], size: 48, color: AppColors.primaryBlue),
               ),
               const SizedBox(height: 14),
-              const Text('John Doe', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textMain)),
+              Text(_userName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textMain)),
               const SizedBox(height: 4),
-              const Text('johndoe@email.com', style: TextStyle(fontSize: 14, color: AppColors.textMuted)),
+              Text(_userEmail, style: const TextStyle(fontSize: 14, color: AppColors.textMuted)),
               const SizedBox(height: 8),
               // Edit profile button
               OutlinedButton.icon(
-                onPressed: () {},
+                onPressed: _openEditProfile,
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 label: const Text('Edit Profile'),
                 style: OutlinedButton.styleFrom(
