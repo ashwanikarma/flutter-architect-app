@@ -15,77 +15,72 @@ class StatisticsTab extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Header
                 Row(
                   children: [
-                    const Icon(Icons.arrow_back_ios_rounded, size: 20),
+                    Icon(Icons.arrow_back_ios_rounded, size: 20, color: AppColors.textMainOf(context)),
                     const Spacer(),
-                    const Text('Statistics', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                    Text('Statistics', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textMainOf(context))),
                     const Spacer(),
                     const SizedBox(width: 20),
                   ],
                 ),
                 const SizedBox(height: 28),
-
-                // Period toggles
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Calories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                    Row(children: [_toggle('D', false), _toggle('W', true), _toggle('M', false)]),
+                    Text('Calories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textMainOf(context))),
+                    Row(children: [_toggle(context, 'D', false), _toggle(context, 'W', true), _toggle(context, 'M', false)]),
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Bar chart
                 SizedBox(
                   height: 200,
                   child: BarChart(
                     BarChartData(
                       maxY: 120,
-                      barGroups: _barGroups(),
+                      barGroups: _barGroups(context),
                       titlesData: FlTitlesData(
                         bottomTitles: AxisTitles(sideTitles: SideTitles(
                           showTitles: true,
                           getTitlesWidget: (v, _) => Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Text(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][v.toInt()],
-                                style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                                style: TextStyle(fontSize: 12, color: AppColors.textMutedOf(context))),
                           ),
                         )),
                         leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 32,
-                          getTitlesWidget: (v, _) => Text('${v.toInt()}', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                          getTitlesWidget: (v, _) => Text('${v.toInt()}', style: TextStyle(fontSize: 11, color: AppColors.textMutedOf(context))),
                         )),
                         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       ),
                       gridData: FlGridData(show: true, drawVerticalLine: false,
-                          getDrawingHorizontalLine: (_) => FlLine(color: Colors.grey.shade200, strokeWidth: 1)),
+                          getDrawingHorizontalLine: (_) => FlLine(color: AppColors.textMutedOf(context).withOpacity(0.15), strokeWidth: 1)),
                       borderData: FlBorderData(show: false),
                       barTouchData: BarTouchData(enabled: false),
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                // Legend
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [_legend(AppColors.chartTarget, 'Target'), const SizedBox(width: 20), _legend(AppColors.chartReached, 'Reached'), const SizedBox(width: 20), _legend(AppColors.chartCurrent, 'Current')],
+                  children: [
+                    _legend(AppColors.chartTargetOf(context), 'Target', context),
+                    const SizedBox(width: 20),
+                    _legend(AppColors.chartReached, 'Reached', context),
+                    const SizedBox(width: 20),
+                    _legend(AppColors.chartCurrentOf(context), 'Current', context),
+                  ],
                 ),
                 const SizedBox(height: 28),
-
-                // This Week Average
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('This Week Average', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                    Text('This Week Average', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textMainOf(context))),
                     Text('+ Add New', style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.w500)),
                   ],
                 ),
                 const SizedBox(height: 16),
-
-                // Stat cards grid
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
@@ -94,10 +89,10 @@ class StatisticsTab extends StatelessWidget {
                   crossAxisSpacing: 12,
                   childAspectRatio: 1.5,
                   children: [
-                    _statCard('Walk Steps', '8,986', 'STEPS', Icons.directions_walk),
-                    _statCard('Sleep', '8.5', 'HOUR', Icons.bedtime_outlined),
-                    _statCard('Water', '2.5', 'GLASS', Icons.water_drop_outlined),
-                    _statCard('Workouts', '120', 'MINUTES', Icons.fitness_center),
+                    _statCard(context, 'Walk Steps', '8,986', 'STEPS', Icons.directions_walk),
+                    _statCard(context, 'Sleep', '8.5', 'HOUR', Icons.bedtime_outlined),
+                    _statCard(context, 'Water', '2.5', 'GLASS', Icons.water_drop_outlined),
+                    _statCard(context, 'Workouts', '120', 'MINUTES', Icons.fitness_center),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -109,7 +104,7 @@ class StatisticsTab extends StatelessWidget {
     );
   }
 
-  static List<BarChartGroupData> _barGroups() {
+  static List<BarChartGroupData> _barGroups(BuildContext context) {
     final data = [
       [60.0, 80.0, 50.0],
       [70.0, 90.0, 60.0],
@@ -123,55 +118,55 @@ class StatisticsTab extends StatelessWidget {
       x: i,
       barsSpace: 3,
       barRods: [
-        BarChartRodData(toY: data[i][0], color: AppColors.chartTarget, width: 8, borderRadius: BorderRadius.circular(4)),
+        BarChartRodData(toY: data[i][0], color: AppColors.chartTargetOf(context), width: 8, borderRadius: BorderRadius.circular(4)),
         BarChartRodData(toY: data[i][1], color: AppColors.chartReached, width: 8, borderRadius: BorderRadius.circular(4)),
-        BarChartRodData(toY: data[i][2], color: AppColors.chartCurrent, width: 8, borderRadius: BorderRadius.circular(4)),
+        BarChartRodData(toY: data[i][2], color: AppColors.chartCurrentOf(context), width: 8, borderRadius: BorderRadius.circular(4)),
       ],
     ));
   }
 
-  static Widget _toggle(String label, bool active) {
+  static Widget _toggle(BuildContext context, String label, bool active) {
     return Container(
       margin: const EdgeInsets.only(left: 6),
       width: 34,
       height: 34,
       decoration: BoxDecoration(
-        color: active ? AppColors.primaryBlue : AppColors.surface,
+        color: active ? AppColors.primaryBlue : AppColors.surfaceOf(context),
         borderRadius: BorderRadius.circular(10),
       ),
       alignment: Alignment.center,
-      child: Text(label, style: TextStyle(color: active ? Colors.white : AppColors.textMuted, fontWeight: FontWeight.w600, fontSize: 13)),
+      child: Text(label, style: TextStyle(color: active ? Colors.white : AppColors.textMutedOf(context), fontWeight: FontWeight.w600, fontSize: 13)),
     );
   }
 
-  static Widget _legend(Color color, String label) {
+  static Widget _legend(Color color, String label, BuildContext context) {
     return Row(children: [
       Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
       const SizedBox(width: 6),
-      Text(label, style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+      Text(label, style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 12)),
     ]);
   }
 
-  static Widget _statCard(String title, String value, String unit, IconData icon) {
+  static Widget _statCard(BuildContext context, String title, String value, String unit, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: AppColors.surfaceOf(context), borderRadius: BorderRadius.circular(20)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(title, style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
-            Icon(Icons.more_horiz, size: 18, color: AppColors.textMuted),
+            Text(title, style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 13)),
+            Icon(Icons.more_horiz, size: 18, color: AppColors.textMutedOf(context)),
           ]),
           const Spacer(),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(value, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
+              Text(value, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textMainOf(context))),
               const SizedBox(width: 4),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: Text(unit, style: TextStyle(color: AppColors.textMuted, fontSize: 11, fontWeight: FontWeight.w500)),
+                child: Text(unit, style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 11, fontWeight: FontWeight.w500)),
               ),
             ],
           ),

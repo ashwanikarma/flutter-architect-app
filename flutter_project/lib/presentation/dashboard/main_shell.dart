@@ -31,7 +31,7 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (i) {
-          if (i == 2) return; // center button handled separately
+          if (i == 2) return;
           setState(() => _currentIndex = i);
         },
         items: [

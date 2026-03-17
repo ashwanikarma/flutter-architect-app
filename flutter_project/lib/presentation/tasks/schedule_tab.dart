@@ -18,13 +18,12 @@ class ScheduleTab extends ConsumerWidget {
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Header
                 Row(
                   children: [
-                    const Icon(Icons.arrow_back_ios_rounded, size: 20),
+                    Icon(Icons.arrow_back_ios_rounded, size: 20, color: AppColors.textMainOf(context)),
                     const Spacer(),
-                    const Text('December 2024 ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-                    const Icon(Icons.keyboard_arrow_down, size: 20),
+                    Text('December 2024 ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textMainOf(context))),
+                    Icon(Icons.keyboard_arrow_down, size: 20, color: AppColors.textMainOf(context)),
                     const Spacer(),
                     Container(
                       width: 34,
@@ -35,12 +34,8 @@ class ScheduleTab extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Week day row
-                _weekRow(),
+                _weekRow(context),
                 const SizedBox(height: 24),
-
-                // Task list from API / demo data
                 tasksAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (e, _) => Text('Error: $e'),
@@ -48,6 +43,7 @@ class ScheduleTab extends ConsumerWidget {
                     children: [
                       for (int i = 0; i < tasks.length; i++)
                         _taskTile(
+                          context: context,
                           time: '${7 + (i ~/ 2)}:${i.isEven ? '00' : '30'}',
                           showTime: i.isEven,
                           title: tasks[i].title,
@@ -66,17 +62,17 @@ class ScheduleTab extends ConsumerWidget {
     );
   }
 
-  Widget _weekRow() {
+  Widget _weekRow(BuildContext context) {
     final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     final dates = [12, 13, 14, 15, 16, 17, 18];
-    const selected = 3; // Thursday
+    const selected = 3;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(7, (i) {
         final isSelected = i == selected;
         return Column(
           children: [
-            Text(days[i], style: TextStyle(color: AppColors.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
+            Text(days[i], style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 13, fontWeight: FontWeight.w600)),
             const SizedBox(height: 10),
             Container(
               width: 36,
@@ -86,7 +82,7 @@ class ScheduleTab extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.center,
-              child: Text('${dates[i]}', style: TextStyle(color: isSelected ? Colors.white : AppColors.textMain, fontWeight: FontWeight.w600)),
+              child: Text('${dates[i]}', style: TextStyle(color: isSelected ? Colors.white : AppColors.textMainOf(context), fontWeight: FontWeight.w600)),
             ),
           ],
         );
@@ -95,6 +91,7 @@ class ScheduleTab extends ConsumerWidget {
   }
 
   Widget _taskTile({
+    required BuildContext context,
     required String time,
     required bool showTime,
     required String title,
@@ -109,7 +106,7 @@ class ScheduleTab extends ConsumerWidget {
         children: [
           SizedBox(
             width: 54,
-            child: showTime ? Text(time, style: TextStyle(color: AppColors.textMuted, fontSize: 13, fontWeight: FontWeight.w500)) : const SizedBox(),
+            child: showTime ? Text(time, style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 13, fontWeight: FontWeight.w500)) : const SizedBox(),
           ),
           Container(
             width: 40,
@@ -122,8 +119,8 @@ class ScheduleTab extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-                Text(subtitle, style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppColors.textMainOf(context))),
+                Text(subtitle, style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 12)),
               ],
             ),
           ),
@@ -132,7 +129,7 @@ class ScheduleTab extends ConsumerWidget {
             height: 22,
             decoration: BoxDecoration(
               color: checked ? AppColors.primaryBlue : Colors.transparent,
-              border: Border.all(color: checked ? AppColors.primaryBlue : AppColors.textMuted.withOpacity(0.3), width: 1.5),
+              border: Border.all(color: checked ? AppColors.primaryBlue : AppColors.textMutedOf(context).withOpacity(0.3), width: 1.5),
               borderRadius: BorderRadius.circular(6),
             ),
             child: checked ? const Icon(Icons.check, color: Colors.white, size: 14) : null,

@@ -17,23 +17,22 @@ class HomeTab extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Good morning,', style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
+                        Text('Good morning,', style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 14)),
                         const SizedBox(height: 2),
-                        const Text('Abraham Steevan', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                        Text('Abraham Steevan', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textMainOf(context))),
                       ],
                     ),
                     Row(
                       children: [
                         IconButton(
                           onPressed: () {},
-                          icon: const Icon(Icons.notifications_none_rounded, size: 26),
+                          icon: Icon(Icons.notifications_none_rounded, size: 26, color: AppColors.textMainOf(context)),
                         ),
                         const CircleAvatar(
                           radius: 20,
@@ -44,38 +43,30 @@ class HomeTab extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Search bar
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: AppColors.surfaceOf(context),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.search, color: AppColors.textMuted),
+                      Icon(Icons.search, color: AppColors.textMutedOf(context)),
                       const SizedBox(width: 10),
-                      Text('Search..', style: TextStyle(color: AppColors.textMuted, fontSize: 15)),
+                      Text('Search..', style: TextStyle(color: AppColors.textMutedOf(context), fontSize: 15)),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // Calorie card
                 const CalorieCard(),
                 const SizedBox(height: 20),
-
-                // Macros
                 const MacroRow(),
                 const SizedBox(height: 24),
-
-                // Planned meals header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Planned Meals', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                    Text('Planned Meals', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textMainOf(context))),
                     Text('View all', style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.w500)),
                   ],
                 ),
