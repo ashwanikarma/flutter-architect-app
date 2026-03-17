@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/api_service.dart';
 import '../auth/login/login_screen.dart';
+import 'edit_profile_screen.dart';
 
 /// Profile tab displaying user info, settings, and logout.
 class ProfileTab extends ConsumerStatefulWidget {
