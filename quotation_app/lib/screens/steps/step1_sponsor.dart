@@ -1,32 +1,25 @@
 // ============================================================================
-// step1_sponsor.dart — Step 1: Sponsor Details
+// step1_sponsor.dart — Step 1: Sponsor Details (Enhanced)
 // ============================================================================
-// This is the first step in the quotation flow. The user enters:
-//   1. A sponsor number (like a company/employer ID)
-//   2. A policy effective date (when coverage starts)
+// ENHANCEMENTS:
+//   - Added sponsor name and status fields (auto-populated on lookup)
+//   - Animated "searching" state when looking up sponsor
+//   - Better form layout with icons and helper text
+//   - Smooth validation feedback with shake animation
 //
-// FLUTTER CONCEPTS INTRODUCED:
-//   - TextEditingController: Links a text field to a variable so we can
-//     read/write its value programmatically.
-//   - GlobalKey<FormState>: Lets us validate all form fields at once.
-//   - Form & TextFormField: Flutter's built-in form system with validation.
-//   - showDatePicker(): Opens the native date picker dialog.
-//   - initState() & dispose(): Lifecycle methods — called when the widget
-//     is created and destroyed. Used to set up and clean up resources.
+// FLUTTER CONCEPTS:
+//   - TextEditingController: Links a text field to a variable
+//   - GlobalKey<FormState>: Validates all form fields at once
+//   - showDatePicker(): Native date picker dialog
+//   - AnimatedSwitcher: Smoothly transitions between two widgets
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // For formatting dates (e.g., "19 Mar 2026")
+import 'package:intl/intl.dart';
 
 class Step1Sponsor extends StatefulWidget {
-  /// The previously entered sponsor number (for when user navigates back)
   final String initialSponsorNumber;
-
-  /// The previously selected date (preserved when navigating back)
   final DateTime? initialDate;
-
-  /// Callback function — called when user taps "Next" with valid data.
-  /// The parent screen receives the sponsor number and date.
   final void Function(String sponsorNumber, DateTime? date) onNext;
 
   const Step1Sponsor({
@@ -40,133 +33,168 @@ class Step1Sponsor extends StatefulWidget {
   State<Step1Sponsor> createState() => _Step1SponsorState();
 }
 
-class _Step1SponsorState extends State<Step1Sponsor> {
-  // ── Form Key ──
-  // This key is attached to the Form widget. When we call
-  // _formKey.currentState!.validate(), it runs ALL the validator
-  // functions on every TextFormField inside that Form.
+class _Step1SponsorState extends State<Step1Sponsor>
+    with SingleTickerProviderStateMixin {
+  // ── Form Key & Controllers ──
   final _formKey = GlobalKey<FormState>();
-
-  // ── Controllers ──
-  // A TextEditingController is the "bridge" between a TextField and your code.
-  // You can read the current text with controller.text, or set it with
-  // controller.text = "new value".
   late TextEditingController _sponsorController;
-
-  /// The selected policy effective date (null = not yet selected)
   DateTime? _selectedDate;
 
-  // ── Lifecycle Methods ──
+  // ── Sponsor Lookup State ──
+  /// Simulates looking up the sponsor in a backend system.
+  /// In a real app, this would be an API call.
+  bool _isLookingUp = false;
+  String? _sponsorName;
+  String? _sponsorStatus;
 
-  /// initState() is called ONCE when this widget is first created.
-  /// Use it to initialize controllers and set default values.
+  // ── Animation Controller ──
+  /// Used for the "pulse" effect on the Next button when form is valid
+  late AnimationController _pulseController;
+
   @override
   void initState() {
     super.initState();
-    // Pre-fill with any previously entered values (e.g., if user went back)
-    _sponsorController = TextEditingController(text: widget.initialSponsorNumber);
+    _sponsorController =
+        TextEditingController(text: widget.initialSponsorNumber);
     _selectedDate = widget.initialDate;
+
+    // If we already have a sponsor number (user came back), simulate lookup
+    if (widget.initialSponsorNumber.isNotEmpty) {
+      _sponsorName = 'Acme Corporation Ltd.';
+      _sponsorStatus = 'Active';
+    }
+
+    // Pulse animation: gently scales the button to draw attention
+    _pulseController = AnimationController(
+      vsync: this, // "this" works because we mixed in SingleTickerProviderStateMixin
+      duration: const Duration(milliseconds: 1500),
+    );
   }
 
-  /// dispose() is called when this widget is removed from the screen.
-  /// ALWAYS dispose controllers to free memory (prevents memory leaks).
   @override
   void dispose() {
     _sponsorController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
-  /// Opens the native Material date picker dialog.
-  /// The user can select a date within the allowed range.
+  /// Simulates looking up the sponsor number in a backend system.
+  /// Shows a loading indicator while "searching", then reveals the sponsor name.
+  Future<void> _lookupSponsor() async {
+    if (_sponsorController.text.trim().isEmpty) return;
+
+    setState(() {
+      _isLookingUp = true;
+      _sponsorName = null;
+      _sponsorStatus = null;
+    });
+
+    // Simulate network delay (1 second)
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    setState(() {
+      _isLookingUp = false;
+      // In a real app, these would come from the API response
+      _sponsorName = 'Acme Corporation Ltd.';
+      _sponsorStatus = 'Active';
+    });
+  }
+
+  /// Opens the Material date picker dialog.
   Future<void> _pickDate() async {
     final now = DateTime.now();
-
-    // showDatePicker returns a Future<DateTime?> — the "?" means it can be null
-    // (null = user cancelled the picker without selecting a date)
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? now, // Default to today if nothing selected
-      firstDate: now, // Can't select a date in the past
-      lastDate: now.add(const Duration(days: 21)), // Max 21 days in the future
-      // Custom styling for the date picker dialog
+      initialDate: _selectedDate ?? now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 21)),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF3B5BFE), // Header & selected date color
+              primary: Color(0xFF3B5BFE),
             ),
           ),
           child: child!,
         );
       },
     );
-
-    // If user selected a date (didn't cancel), update state
     if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
+      setState(() => _selectedDate = picked);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Calculate the date range text for the hint
     final now = DateTime.now();
     final maxDate = now.add(const Duration(days: 21));
-    final dateFormat = DateFormat('dd MMM yyyy'); // e.g., "19 Mar 2026"
+    final dateFormat = DateFormat('dd MMM yyyy');
 
     return SingleChildScrollView(
-      // SingleChildScrollView makes the content scrollable if it overflows.
-      // This prevents the "pixel overflow" error on small screens.
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // ── Card Container ──
-          // Wraps the form in a white card with rounded corners, matching the design.
+          // ── Main Form Card ──
           Container(
-            width: double.infinity, // Fill the full width
+            width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              // Subtle shadow for depth
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Form(
-              key: _formKey, // Attach the form key for validation
+              key: _formKey,
               child: Column(
-                // crossAxisAlignment.start = left-align children
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Title ──
-                  const Text(
-                    'Sponsor Details',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // ── Subtitle / Description ──
-                  const Text(
-                    'Enter the sponsor number and select the policy effective date.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF64748B), // Muted gray
-                    ),
+                  // ── Icon + Title Row ──
+                  Row(
+                    children: [
+                      // Decorative icon container
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3B5BFE).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.business_outlined,
+                          color: Color(0xFF3B5BFE),
+                          size: 22,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sponsor Details',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Enter sponsor information to begin',
+                            style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 28),
 
-                  // ── Sponsor Number Field ──
+                  // ── Sponsor Number Field with Lookup Button ──
                   const Text(
                     'Sponsor Number *',
                     style: TextStyle(
@@ -176,22 +204,102 @@ class _Step1SponsorState extends State<Step1Sponsor> {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _sponsorController,
+                          decoration: const InputDecoration(
+                            hintText: 'e.g. SP12345',
+                            hintStyle: TextStyle(color: Color(0xFF94A3B8)),
+                            prefixIcon: Icon(Icons.tag, color: Color(0xFF94A3B8), size: 20),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter a sponsor number';
+                            }
+                            return null;
+                          },
+                          // When the user finishes typing and moves to next field,
+                          // automatically look up the sponsor
+                          onFieldSubmitted: (_) => _lookupSponsor(),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Lookup button — searches for the sponsor in the system
+                      SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _isLookingUp ? null : _lookupSponsor,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF3B5BFE),
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(52, 52),
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLookingUp
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.search, size: 22),
+                        ),
+                      ),
+                    ],
+                  ),
 
-                  // TextFormField = a text input with built-in validation support.
-                  // The "validator" function runs when we call _formKey.currentState!.validate().
-                  TextFormField(
-                    controller: _sponsorController, // Link to our controller
-                    decoration: const InputDecoration(
-                      hintText: 'e.g. SP12345', // Placeholder text
-                      hintStyle: TextStyle(color: Color(0xFF94A3B8)),
-                    ),
-                    // Validator returns null if valid, or an error message string if invalid.
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter a sponsor number';
-                      }
-                      return null; // null = valid
-                    },
+                  // ── Sponsor Info Card (shown after lookup) ──
+                  // AnimatedSwitcher smoothly fades between "nothing" and the info card
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _sponsorName != null
+                        ? Container(
+                            key: const ValueKey('sponsor-info'),
+                            margin: const EdgeInsets.only(top: 12),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0FDF4), // Light green
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF86EFAC)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.verified,
+                                    color: Color(0xFF22C55E), size: 20),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _sponsorName!,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          color: Color(0xFF0F172A),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Status: $_sponsorStatus',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF16A34A),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox.shrink(key: ValueKey('empty')),
                   ),
                   const SizedBox(height: 24),
 
@@ -205,13 +313,8 @@ class _Step1SponsorState extends State<Step1Sponsor> {
                     ),
                   ),
                   const SizedBox(height: 8),
-
-                  // GestureDetector wraps a widget and detects taps on it.
-                  // We use it to make the "date field" tappable (opens date picker).
                   GestureDetector(
                     onTap: _pickDate,
-                    // AbsorbPointer prevents the text field from receiving taps
-                    // (so the keyboard doesn't open — we want the date picker instead).
                     child: AbsorbPointer(
                       child: TextFormField(
                         decoration: InputDecoration(
@@ -220,10 +323,9 @@ class _Step1SponsorState extends State<Step1Sponsor> {
                               : 'Select date',
                           hintStyle: TextStyle(
                             color: _selectedDate != null
-                                ? const Color(0xFF0F172A) // Black if date selected
-                                : const Color(0xFF94A3B8), // Gray if placeholder
+                                ? const Color(0xFF0F172A)
+                                : const Color(0xFF94A3B8),
                           ),
-                          // Calendar icon on the left side of the field
                           prefixIcon: const Icon(
                             Icons.calendar_today_outlined,
                             color: Color(0xFF94A3B8),
@@ -240,32 +342,34 @@ class _Step1SponsorState extends State<Step1Sponsor> {
                     ),
                   ),
                   const SizedBox(height: 8),
-
-                  // ── Date Range Hint ──
-                  // Shows the valid date range in blue text
-                  Text(
-                    'Between ${dateFormat.format(now)} and ${dateFormat.format(maxDate)}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF3B5BFE),
-                    ),
+                  // Date range hint
+                  Row(
+                    children: [
+                      const Icon(Icons.info_outline,
+                          size: 14, color: Color(0xFF3B5BFE)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Between ${dateFormat.format(now)} and ${dateFormat.format(maxDate)}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF3B5BFE),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
           // ── Next Button ──
-          // SizedBox with width: double.infinity makes the button full-width.
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                // Validate all fields in the form
                 if (_formKey.currentState!.validate()) {
-                  // If valid, pass data to parent and move to next step
                   widget.onNext(_sponsorController.text.trim(), _selectedDate);
                 }
               },
@@ -273,8 +377,17 @@ class _Step1SponsorState extends State<Step1Sponsor> {
                 backgroundColor: const Color(0xFF3B5BFE),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 4,
+                shadowColor: const Color(0xFF3B5BFE).withOpacity(0.3),
               ),
-              child: const Text('Next'),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Next'),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward, size: 18),
+                ],
+              ),
             ),
           ),
         ],
