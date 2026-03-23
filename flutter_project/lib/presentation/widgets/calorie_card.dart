@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
-/// Large gradient card showing daily calorie count.
+/// Large gradient card showing daily calorie count — now with purple gradient.
 class CalorieCard extends StatelessWidget {
   const CalorieCard({super.key});
 
@@ -14,7 +14,7 @@ class CalorieCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.3),
+            color: AppColors.primaryPurple.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -28,18 +28,30 @@ class CalorieCard extends StatelessWidget {
             children: [
               const Text(
                 'Count Your Daily Calories 🔥',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15),
               ),
               Icon(Icons.more_vert, color: Colors.white.withOpacity(0.8)),
             ],
           ),
           const SizedBox(height: 8),
-          Text('Eaten 3,143', style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 13)),
+          Text('Eaten 3,143',
+              style: TextStyle(
+                  color: Colors.white.withOpacity(0.75), fontSize: 13)),
           const SizedBox(height: 4),
-          const Text('285', style: TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800)),
-          const Text('KCAL LEFT', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
+          const Text('285',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 52,
+                  fontWeight: FontWeight.w800)),
+          const Text('KCAL LEFT',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500)),
           const SizedBox(height: 12),
-          // Progress bar
           Container(
             height: 28,
             decoration: BoxDecoration(
@@ -56,7 +68,11 @@ class CalorieCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     alignment: Alignment.center,
-                    child: const Text('65 KCAL', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                    child: const Text('65 KCAL',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600)),
                   ),
                 ),
                 const Expanded(flex: 35, child: SizedBox()),

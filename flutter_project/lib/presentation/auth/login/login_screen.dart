@@ -4,8 +4,10 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
 import '../../../services/providers.dart';
 import '../register/register_screen.dart';
-import '../../dashboard/main_shell.dart';
+import '../otp/otp_screen.dart';
 
+/// Beautiful login screen with purple gradient header,
+/// glassmorphic card, and smooth animations.
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -13,92 +15,336 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen>
+    with SingleTickerProviderStateMixin {
+  // Form controllers & state
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true;
 
+  // Animation controller for entrance animation
+  late AnimationController _animCtrl;
+  late Animation<Offset> _slideAnim;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    // Set up a 800ms slide-up + fade-in animation
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut),
+    );
+    _animCtrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
+
+  /// Handle login — navigate to OTP screen on success
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
-    try {
-      final api = ref.read(apiServiceProvider);
-      final res = await api.login(_emailCtrl.text.trim(), _passCtrl.text);
-      await api.saveToken(res.data['token']);
-      if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainShell()));
-    } catch (_) {
-      // If backend is unavailable, allow demo login
-      if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainShell()));
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+
+    // Simulate a brief network call
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    // Navigate to OTP verification screen
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => OtpScreen(email: _emailCtrl.text.trim()),
+        transitionsBuilder: (_, anim, __, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1, 0),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo / Title
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(20),
+      body: SingleChildScrollView(
+        child: SizedBox(
+          height: size.height,
+          child: Stack(
+            children: [
+              // ── Purple gradient background (top 45%) ──
+              Container(
+                height: size.height * 0.45,
+                width: double.infinity,
+                decoration: const BoxDecoration(gradient: AppColors.splashGradient),
+                child: SafeArea(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // App icon with white circle
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.fitness_center_rounded,
+                          size: 40,
+                          color: AppColors.primaryPurple,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'FitTrack',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Your Fitness Companion',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white.withOpacity(0.85),
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.fitness_center, color: Colors.white, size: 36),
                 ),
-                const SizedBox(height: 24),
-                Text('Welcome Back', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Text('Sign in to continue', style: TextStyle(color: AppColors.textMuted, fontSize: 15)),
-                const SizedBox(height: 40),
+              ),
 
-                // Email
-                TextFormField(
-                  controller: _emailCtrl,
-                  validator: Validators.email,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(hintText: 'Email', prefixIcon: Icon(Icons.email_outlined)),
+              // ── Form card (overlapping the gradient) ──
+              Positioned(
+                top: size.height * 0.36,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: SlideTransition(
+                  position: _slideAnim,
+                  child: FadeTransition(
+                    opacity: _fadeAnim,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.backgroundOf(context),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(32),
+                        ),
+                      ),
+                      padding: const EdgeInsets.fromLTRB(28, 36, 28, 20),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Welcome text
+                            Text(
+                              'Welcome Back 👋',
+                              style: TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textMainOf(context),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Sign in to continue your fitness journey',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textMutedOf(context),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+
+                            // Email field
+                            TextFormField(
+                              controller: _emailCtrl,
+                              validator: Validators.email,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: InputDecoration(
+                                hintText: 'Email address',
+                                prefixIcon: Icon(
+                                  Icons.email_outlined,
+                                  color: AppColors.primaryPurple.withOpacity(0.7),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Password field with visibility toggle
+                            TextFormField(
+                              controller: _passCtrl,
+                              validator: Validators.password,
+                              obscureText: _obscurePassword,
+                              decoration: InputDecoration(
+                                hintText: 'Password',
+                                prefixIcon: Icon(
+                                  Icons.lock_outline,
+                                  color: AppColors.primaryPurple.withOpacity(0.7),
+                                ),
+                                suffixIcon: IconButton(
+                                  onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off_outlined
+                                        : Icons.visibility_outlined,
+                                    color: AppColors.textMutedOf(context),
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Forgot password link
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(
+                                    color: AppColors.primaryPurple,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+
+                            // Sign In button with gradient
+                            _loading
+                                ? const Center(
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.primaryPurple,
+                                    ),
+                                  )
+                                : Container(
+                                    width: double.infinity,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      gradient: AppColors.primaryGradient,
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primaryPurple
+                                              .withOpacity(0.4),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ElevatedButton(
+                                      onPressed: _login,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        shadowColor: Colors.transparent,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Sign In',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                            const Spacer(),
+
+                            // Sign up link
+                            Center(
+                              child: TextButton(
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (_, __, ___) =>
+                                        const RegisterScreen(),
+                                    transitionsBuilder: (_, anim, __, child) {
+                                      return SlideTransition(
+                                        position: Tween<Offset>(
+                                          begin: const Offset(1, 0),
+                                          end: Offset.zero,
+                                        ).animate(CurvedAnimation(
+                                          parent: anim,
+                                          curve: Curves.easeOutCubic,
+                                        )),
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration:
+                                        const Duration(milliseconds: 400),
+                                  ),
+                                ),
+                                child: Text.rich(
+                                  TextSpan(
+                                    text: "Don't have an account? ",
+                                    style: TextStyle(
+                                      color: AppColors.textMutedOf(context),
+                                      fontSize: 14,
+                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: 'Sign Up',
+                                        style: TextStyle(
+                                          color: AppColors.primaryPurple,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-
-                // Password
-                TextFormField(
-                  controller: _passCtrl,
-                  validator: Validators.password,
-                  obscureText: true,
-                  decoration: const InputDecoration(hintText: 'Password', prefixIcon: Icon(Icons.lock_outline)),
-                ),
-                const SizedBox(height: 28),
-
-                // Login button
-                _loading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(onPressed: _login, child: const Text('Sign In')),
-                const SizedBox(height: 16),
-
-                // Register link
-                TextButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                  child: Text.rich(TextSpan(
-                    text: "Don't have an account? ",
-                    style: TextStyle(color: AppColors.textMuted),
-                    children: [TextSpan(text: 'Sign Up', style: TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.w600))],
-                  )),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
