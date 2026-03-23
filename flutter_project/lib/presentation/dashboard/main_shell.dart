@@ -5,7 +5,7 @@ import '../tasks/statistics_tab.dart';
 import '../tasks/schedule_tab.dart';
 import '../profile/profile_tab.dart';
 
-/// Main app shell with bottom navigation.
+/// Main app shell with bottom navigation — updated for purple theme.
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -35,23 +35,32 @@ class _MainShellState extends State<MainShell> {
           setState(() => _currentIndex = i);
         },
         items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: ''),
-          const BottomNavigationBarItem(icon: Icon(Icons.bar_chart_rounded), label: ''),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded), label: ''),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart_rounded), label: ''),
           BottomNavigationBarItem(
             icon: Container(
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: AppColors.accentGreen,
+                gradient: AppColors.primaryGradient,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: AppColors.accentGreen.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))],
+                boxShadow: [
+                  BoxShadow(
+                      color: AppColors.primaryPurple.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4)),
+                ],
               ),
               child: const Icon(Icons.add, color: Colors.white, size: 28),
             ),
             label: '',
           ),
-          const BottomNavigationBarItem(icon: Icon(Icons.calendar_today_rounded), label: ''),
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), label: ''),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_today_rounded), label: ''),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline_rounded), label: ''),
         ],
       ),
     );
