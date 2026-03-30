@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/page_transitions.dart';
 import '../../dashboard/main_shell.dart';
 
 /// OTP verification screen.
@@ -92,24 +93,8 @@ class _OtpScreenState extends State<OtpScreen>
 
     if (otp == '9090') {
       // ✅ Success — navigate to dashboard with a nice transition
-      Navigator.of(context).pushAndRemoveUntil(
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const MainShell(),
-          transitionsBuilder: (_, anim, __, child) {
-            return FadeTransition(
-              opacity: anim,
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 0.95, end: 1.0).animate(
-                  CurvedAnimation(parent: anim, curve: Curves.easeOut),
-                ),
-                child: child,
-              ),
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
-        (_) => false,
-      );
+      // Use centralized transition utility for clean navigation
+      AppTransitions.pushAndClearAll(context, const MainShell());
     } else {
       // ❌ Wrong OTP — shake animation & error state
       setState(() {

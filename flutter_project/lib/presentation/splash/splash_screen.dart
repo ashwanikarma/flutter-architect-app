@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/page_transitions.dart';
 import '../../services/api_service.dart';
 import '../auth/login/login_screen.dart';
 import '../dashboard/main_shell.dart';
@@ -49,12 +50,7 @@ class _SplashScreenState extends State<SplashScreen>
         token != null ? const MainShell() : const LoginScreen();
 
     Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => destination,
-        transitionsBuilder: (_, anim, __, child) =>
-            FadeTransition(opacity: anim, child: child),
-        transitionDuration: const Duration(milliseconds: 500),
-      ),
+      AppTransitions.fadeScale(destination),
     );
   }
 
