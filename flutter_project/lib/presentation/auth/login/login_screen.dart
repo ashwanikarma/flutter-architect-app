@@ -2,12 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/utils/page_transitions.dart';
 import '../../../services/providers.dart';
 import '../register/register_screen.dart';
 import '../otp/otp_screen.dart';
+import '../forgot_password/forgot_password_screen.dart';
 
-/// Beautiful login screen with purple gradient header,
-/// glassmorphic card, and smooth animations.
+/// ═══════════════════════════════════════════════════════════════════════
+/// LOGIN SCREEN
+/// ═══════════════════════════════════════════════════════════════════════
+///
+/// Beautiful login screen with purple gradient header, animated form card,
+/// and smooth transitions to OTP, Register, and Forgot Password screens.
+///
+/// Navigation flow:
+///   Login → OTP (on success)
+///   Login → Register (sign up link)
+///   Login → Forgot Password (forgot password link)
+/// ═══════════════════════════════════════════════════════════════════════
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -32,7 +44,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   void initState() {
     super.initState();
-    // Set up a 800ms slide-up + fade-in animation
     _animCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -60,28 +71,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
-    // Simulate a brief network call
     await Future.delayed(const Duration(milliseconds: 800));
 
     if (!mounted) return;
     setState(() => _loading = false);
 
-    // Navigate to OTP verification screen
+    // Navigate to OTP verification with smooth slide transition
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (_, __, ___) => OtpScreen(email: _emailCtrl.text.trim()),
-        transitionsBuilder: (_, anim, __, child) {
-          return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(1, 0),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOutCubic)),
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 400),
-      ),
+      AppTransitions.slideRight(OtpScreen(email: _emailCtrl.text.trim())),
     );
   }
 
@@ -104,7 +102,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // App icon with white circle
                       Container(
                         width: 80,
                         height: 80,
@@ -172,7 +169,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Welcome text
                             Text(
                               'Welcome Back 👋',
                               style: TextStyle(
@@ -206,7 +202,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             const SizedBox(height: 16),
 
-                            // Password field with visibility toggle
+                            // Password field
                             TextFormField(
                               controller: _passCtrl,
                               validator: Validators.password,
@@ -233,11 +229,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             const SizedBox(height: 12),
 
-                            // Forgot password link
+                            // Forgot password link — now navigates!
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    AppTransitions.slideRight(
+                                      const ForgotPasswordScreen(),
+                                    ),
+                                  );
+                                },
                                 child: Text(
                                   'Forgot Password?',
                                   style: TextStyle(
@@ -250,7 +253,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             const SizedBox(height: 8),
 
-                            // Sign In button with gradient
+                            // Sign In button
                             _loading
                                 ? const Center(
                                     child: CircularProgressIndicator(
@@ -293,28 +296,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   ),
                             const Spacer(),
 
-                            // Sign up link
+                            // Sign up link — smooth transition
                             Center(
                               child: TextButton(
                                 onPressed: () => Navigator.push(
                                   context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (_, __, ___) =>
-                                        const RegisterScreen(),
-                                    transitionsBuilder: (_, anim, __, child) {
-                                      return SlideTransition(
-                                        position: Tween<Offset>(
-                                          begin: const Offset(1, 0),
-                                          end: Offset.zero,
-                                        ).animate(CurvedAnimation(
-                                          parent: anim,
-                                          curve: Curves.easeOutCubic,
-                                        )),
-                                        child: child,
-                                      );
-                                    },
-                                    transitionDuration:
-                                        const Duration(milliseconds: 400),
+                                  AppTransitions.slideRight(
+                                    const RegisterScreen(),
                                   ),
                                 ),
                                 child: Text.rich(

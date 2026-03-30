@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_provider.dart';
+import '../../core/utils/page_transitions.dart';
 import '../../services/api_service.dart';
 import '../auth/login/login_screen.dart';
 import 'edit_profile_screen.dart';
@@ -34,12 +35,10 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
   Future<void> _openEditProfile() async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
-      MaterialPageRoute(
-        builder: (_) => EditProfileScreen(
-          initialName: _userName,
-          initialEmail: _userEmail,
-        ),
-      ),
+      AppTransitions.slideRight(EditProfileScreen(
+        initialName: _userName,
+        initialEmail: _userEmail,
+      )),
     );
     if (result != null && mounted) {
       setState(() {
@@ -70,10 +69,7 @@ class _ProfileTabState extends ConsumerState<ProfileTab> {
     if (confirm == true && mounted) {
       await ApiService().clearToken();
       if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (_) => false,
-      );
+      AppTransitions.pushAndClearAll(context, const LoginScreen());
     }
   }
 
