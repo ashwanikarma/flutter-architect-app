@@ -94,6 +94,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     Navigator.pop(context);
   }
 
+  /// Calculate password strength from 0.0 to 1.0
+  /// Checks: length, uppercase, lowercase, digit, special char
+  double _calcStrength(String password) {
+    if (password.isEmpty) return 0;
+    double score = 0;
+    if (password.length >= 6) score += 0.2;
+    if (password.length >= 10) score += 0.1;
+    if (RegExp(r'[a-z]').hasMatch(password)) score += 0.15;
+    if (RegExp(r'[A-Z]').hasMatch(password)) score += 0.2;
+    if (RegExp(r'[0-9]').hasMatch(password)) score += 0.15;
+    if (RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(password)) score += 0.2;
+    return score.clamp(0.0, 1.0);
+  }
+
+  /// Color based on current strength
+  Color get _strengthColor {
+    if (_passwordStrength < 0.35) return AppColors.accentCoral;
+    if (_passwordStrength < 0.75) return AppColors.accentGold;
+    return AppColors.accentGreen;
+  }
+
+  /// Label based on current strength
+  String get _strengthLabel {
+    if (_passwordStrength < 0.35) return 'Weak — add uppercase, numbers & symbols';
+    if (_passwordStrength < 0.75) return 'Medium — almost there!';
+    return 'Strong password ✓';
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
