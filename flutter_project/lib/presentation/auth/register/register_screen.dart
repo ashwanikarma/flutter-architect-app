@@ -23,6 +23,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   bool _obscurePass = true;
   bool _obscureConfirm = true;
   bool _agreeTerms = false;
+  double _passwordStrength = 0; // 0.0 to 1.0
 
   late AnimationController _animCtrl;
   late Animation<Offset> _slideAnim;
@@ -91,6 +92,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       ),
     );
     Navigator.pop(context);
+  }
+
+  /// Calculate password strength from 0.0 to 1.0
+  /// Checks: length, uppercase, lowercase, digit, special char
+  double _calcStrength(String password) {
+    if (password.isEmpty) return 0;
+    double score = 0;
+    if (password.length >= 6) score += 0.2;
+    if (password.length >= 10) score += 0.1;
+    if (RegExp(r'[a-z]').hasMatch(password)) score += 0.15;
+    if (RegExp(r'[A-Z]').hasMatch(password)) score += 0.2;
+    if (RegExp(r'[0-9]').hasMatch(password)) score += 0.15;
+    if (RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(password)) score += 0.2;
+    return score.clamp(0.0, 1.0);
+  }
+
+  /// Color based on current strength
+  Color get _strengthColor {
+    if (_passwordStrength < 0.35) return AppColors.accentCoral;
+    if (_passwordStrength < 0.75) return AppColors.accentGold;
+    return AppColors.accentGreen;
+  }
+
+  /// Label based on current strength
+  String get _strengthLabel {
+    if (_passwordStrength < 0.35) return 'Weak — add uppercase, numbers & symbols';
+    if (_passwordStrength < 0.75) return 'Medium — almost there!';
+    return 'Strong password ✓';
   }
 
   @override
@@ -209,11 +238,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                               ),
                               const SizedBox(height: 14),
 
-                              // Password
+                              // Password with strength indicator
                               TextFormField(
                                 controller: _passCtrl,
                                 validator: Validators.password,
                                 obscureText: _obscurePass,
+                                onChanged: (value) {
+                                  setState(() => _passwordStrength = _calcStrength(value));
+                                },
                                 decoration: InputDecoration(
                                   hintText: 'Password',
                                   prefixIcon: Icon(Icons.lock_outline,
@@ -232,6 +264,46 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                   ),
                                 ),
                               ),
+                              // ── Password strength indicator ──
+                              if (_passCtrl.text.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                // Animated progress bar
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    height: 6,
+                                    child: LinearProgressIndicator(
+                                      value: _passwordStrength,
+                                      backgroundColor: AppColors.primaryPurple.withOpacity(0.1),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        _strengthColor,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      _passwordStrength >= 0.75
+                                          ? Icons.check_circle_rounded
+                                          : Icons.info_outline_rounded,
+                                      size: 14,
+                                      color: _strengthColor,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _strengthLabel,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: _strengthColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                               const SizedBox(height: 14),
 
                               // Confirm password
