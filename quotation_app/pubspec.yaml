@@ -11,6 +11,15 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.1.0
   intl: ^0.19.0
+  # ── NEW: State management + Networking ──
+  # flutter_riverpod: Manages app state like a "smart global variable" system.
+  #   Instead of passing data through 10 levels of widgets, Riverpod lets any
+  #   widget "subscribe" to data and automatically rebuild when it changes.
+  flutter_riverpod: ^2.4.9
+  # dio: A powerful HTTP client (like Axios in JavaScript).
+  #   It handles GET/POST/PUT/DELETE requests to your C# backend API.
+  #   It supports interceptors (auto-attach auth tokens), timeouts, and error handling.
+  dio: ^5.4.0
 
 dev_dependencies:
   flutter_test:
